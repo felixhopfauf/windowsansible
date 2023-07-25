@@ -1,0 +1,7 @@
+- name: Install All Applications on RDSH
+  hosts: all
+  tasks:
+  - name: Install Chrome
+    win_chocolatey:
+      name: googlechrome
+      state: present
