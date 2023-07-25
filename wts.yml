@@ -1,5 +1,7 @@
 - name: Install All Applications on RDSH
   hosts: all
+  collections:
+    - community.windows
   tasks:
   - name: install chocolatey
     win_chocolatey:
