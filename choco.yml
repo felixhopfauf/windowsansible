@@ -1,0 +1,11 @@
+- name: Install All Applications on RDSH
+  hosts: all
+  collections:
+    - community.windows
+    - chocolatey.chocolatey
+  tasks:
+  - name: install chocolatey
+    win_shell: | 
+      Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+  - name: Reboot
+    win_reboot:
