@@ -4,10 +4,6 @@
     - community.windows
     - chocolatey.chocolatey
   tasks:
-  - name: install chocolatey
-    win_chocolatey:
-       name: chocolatey
-       state: present
   - name: Install Chrome
     win_chocolatey:
       name: googlechrome
