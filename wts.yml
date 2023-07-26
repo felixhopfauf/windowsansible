@@ -6,13 +6,28 @@
     - chocolatey.chocolatey
     - ansible.windows
   tasks:
+  - name: Check if Chocolatey is already installed
+    win_shell: (Get-Command choco).Path
+    register: get_command_choco
+
+  - name: install chocolatey
+    win_shell: | 
+      Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+    when: not get_command_choco.stderr == ""
+    
+  - name: Reboot
+    win_reboot:
+    when: not get_command_choco.stderr == ""
+
   - win_domain_membership:
       dns_domain_name: '{{ domain }}'
       domain_admin_user: '{{ domainuser }}'
       domain_admin_password: '{{ domainpassword }}'
-      domain_ou_path: "OU=RDS,OU=Windows,OU=Server,OU=DRKHG_Computer,DC=drkhg,DC=local"
+      domain_ou_path: '{{ domainou }}'
       state: domain
     register: domain_state
+    tags:
+    - domain
 
   - win_reboot:
     when: domain_state.reboot_required
