@@ -5,6 +5,7 @@
     - community.windows
     - chocolatey.chocolatey
     - ansible.windows
+    - microsoft.ad
   tasks:
   - name: Check if Chocolatey is already installed
     win_shell: (Get-Command choco).Path

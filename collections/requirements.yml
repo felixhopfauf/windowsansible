@@ -2,3 +2,4 @@
     - community.windows
     - chocolatey.chocolatey
     - ansible.windows
+    - microsoft.ad
