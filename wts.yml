@@ -11,7 +11,7 @@
     win_shell: (Get-Command choco).Path
     register: get_command_choco
 
-  - name: install chocolatey
+  - name: Install chocolatey
     win_shell: | 
       Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
     when: not get_command_choco.stderr == ""
