@@ -65,6 +65,7 @@
     win_chocolatey:
       name: onedrive
       state: present
+      ignore_checksums:
 
   - name: Install Microsoft Teams
     win_chocolatey:
