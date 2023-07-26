@@ -19,18 +19,16 @@
     win_reboot:
     when: not get_command_choco.stderr == ""
 
-  - win_domain_membership:
+  - name: join host with automatic reboot
+    microsoft.ad.membership:
       dns_domain_name: '{{ domain }}'
       domain_admin_user: '{{ domainuser }}'
       domain_admin_password: '{{ domainpassword }}'
       domain_ou_path: '{{ domainou }}'
       state: domain
-    register: domain_state
+      reboot: true
     tags:
     - domain
-
-  - win_reboot:
-    when: domain_state.reboot_required
 
   - name: Install Chrome
     win_chocolatey:
@@ -87,16 +85,16 @@
 #      category_names: '*'
 #      reboot: false
 
-  - name: Add Domain Group to FSlogix ODFC
-    ansible.windows.win_group_membership:
-      name: FSLogix ODFC Include List
-      members:
-        - DRKHG\FSLogix-Access
-      state: pure
+#  - name: Add Domain Group to FSlogix ODFC
+#    ansible.windows.win_group_membership:
+#      name: FSLogix ODFC Include List
+#      members:
+#        - DRKHG\FSLogix-Access
+#      state: pure
 
-  - name: Add Domain Group to FSlogix Profiles
-    ansible.windows.win_group_membership:
-      name: FSLogix Profile Include List
-      members:
-        - DRKHG\FSLogix-Access
-      state: pure
+#  - name: Add Domain Group to FSlogix Profiles
+#    ansible.windows.win_group_membership:
+#      name: FSLogix Profile Include List
+#      members:
+#        - DRKHG\FSLogix-Access
+#      state: pure
