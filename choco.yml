@@ -4,8 +4,14 @@
     - community.windows
     - chocolatey.chocolatey
   tasks:
+  - name: Check if Chocolatey is already installed
+    win_shell: (Get-Command choco).Path
+    register: get_command_choco
+
   - name: install chocolatey
     win_shell: | 
       Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+    when: not get_command_choco.stderr == ""
+    
   - name: Reboot
     win_reboot:
