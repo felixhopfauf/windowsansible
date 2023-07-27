@@ -21,6 +21,7 @@
     tags: 
     - choco
     - apps
+
   - name: Reboot
     win_reboot:
     when: not get_command_choco.stderr == ""
@@ -92,6 +93,7 @@
       name: onedrive
       state: present
       ignore_checksums: True
+    ignore_errors: yes
     tags: 
     - onedrive
     - apps
@@ -139,12 +141,21 @@
     - ninja
     - apps
 
+  - name: Check if Sophos is installed
+    win_service:
+      name: Sophos Endpoint Defense Service
+    register: service_info
+    tags: 
+    - sophos
+    - apps
+
   - name: Install Sophos Server Protection
     ansible.windows.win_package:
       path: '{{ domaindeploypath }}\SophosSetupServer.exe' 
       product_id: 'Sophos Server Protection'
       arguments: --quiet
       state: present
+    when: service_info == False
     tags: 
     - sophos
     - apps
