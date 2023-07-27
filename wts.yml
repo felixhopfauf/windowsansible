@@ -84,14 +84,14 @@
 
   - name: Install NinjaRMM
     ansible.windows.win_package:
-      path: \\drkhg.local\SYSVOL\drkhg.local\deploy\DRKNinjaTerraCloud.msi
+      path: '{{ domaindeploypath }}\DRKNinjaTerraCloud.msi' 
       product_id: 'NinjaOne RMM'
       arguments: /quiet
       state: present
 
   - name: Install Sophos Server Protection
     ansible.windows.win_package:
-      path: \\drkhg.local\SYSVOL\drkhg.local\deploy\SophosSetupServer.exe
+      path: '{{ domaindeploypath }}\SophosSetupServer.exe' 
       product_id: 'Sophos Server Protection'
       arguments: --quiet
       state: present
