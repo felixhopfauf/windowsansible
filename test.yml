@@ -1,0 +1,23 @@
+- name: Install All Applications on RDSH
+  hosts: all
+  gather_facts: true
+  collections:
+    - community.windows
+    - chocolatey.chocolatey
+    - ansible.windows
+    - microsoft.ad
+  tasks:
+  - name: Add Server to RDS Deployment
+    ansible.windows.win_powershell:
+      script: | 
+        Add-RDServer -Server '{{ ansible_fqdn }}' -Role "RDS-RD-SERVER" -ConnectionBroker '{{ rdsconnectionbroker }}'
+
+  - name: Add Server to RDS Collection
+    ansible.windows.win_powershell:
+      script: | 
+        Add-RDSessionHost -SessionHost '{{ ansible_fqdn }}' -ConnectionBroker '{{ rdsconnectionbroker }}' -CollectionName '{{ rdscollectionname }}'
+
+  - name: Disable new Connections
+    ansible.windows.win_powershell:
+      script: | 
+        Set-RDSessionHost -SessionHost '{{ ansible_fqdn }}' -NewConnectionAllowed No -ConnectionBroker '{{ rdsconnectionbroker }}'

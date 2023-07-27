@@ -82,21 +82,73 @@
       name: winscp
       state: present
 
+  - name: Install NinjaRMM
+    ansible.windows.win_package:
+      path: \\drkhg.local\SYSVOL\drkhg.local\deploy\DRKNinjaTerraCloud.msi
+      product_id: 'NinjaOne RMM'
+      arguments: /quiet
+      state: present
+
+  - name: Install Sophos Server Protection
+    ansible.windows.win_package:
+      path: \\drkhg.local\SYSVOL\drkhg.local\deploy\SophosSetupServer.exe
+      product_id: 'Sophos Server Protection'
+      arguments: --quiet
+      state: present
+
+  - name: Add Domain Group to FSlogix ODFC
+    ansible.windows.win_group_membership:
+      name: FSLogix ODFC Include List
+      members:
+        - DRKHG\FSLogix-Access
+      state: pure
+
+  - name: Add Domain Group to FSlogix Profiles
+    ansible.windows.win_group_membership:
+      name: FSLogix Profile Include List
+      members:
+        - DRKHG\FSLogix-Access
+      state: pure
+
+  - name: Copy App Rules
+    community.windows.win_robocopy:
+      src: '{{ fslogixapprulesrc }}'
+      dest: '{{ fslogixappruledst }}'
+
+  - name: Create Autostart FSLogix Tray for all Users
+    community.windows.win_shortcut:
+      src: '{{ fslogixtraysrc }}'
+      dest: '{{ autostartfolder }}\FSLogix Tray.lnk'
+      icon: '{{ fslogixtraysrc }},0'
+
+  - name: Install RDSH with sub features and management tools
+    ansible.windows.win_feature:
+      name: RDS-RD-Server
+      state: present
+      include_sub_features: true
+      include_management_tools: true
+    register: win_feature
+
+  - name: Reboot if installing RDSH feature requires it
+    ansible.windows.win_reboot:
+    when: win_feature.reboot_required
+
+  - name: Add Server to RDS Deployment
+    ansible.windows.win_powershell:
+      script: | 
+        Add-RDServer -Server '{{ ansible_fqdn }}' -Role "RDS-RD-SERVER" -ConnectionBroker '{{ rdsconnectionbroker }}'
+
+  - name: Add Server to RDS Collection
+    ansible.windows.win_powershell:
+      script: | 
+        Add-RDSessionHost -SessionHost '{{ ansible_fqdn }}' -ConnectionBroker '{{ rdsconnectionbroker }}' -CollectionName '{{ rdscollectionname }}'
+
+  - name: Disable new Connections
+    ansible.windows.win_powershell:
+      script: | 
+        Set-RDSessionHost -SessionHost '{{ ansible_fqdn }}' -NewConnectionAllowed No -ConnectionBroker '{{ rdsconnectionbroker }}'
+
 #  - name: Install all updates and reboot as many times as needed
 #    ansible.windows.win_updates:
 #      category_names: '*'
 #      reboot: false
-
-#  - name: Add Domain Group to FSlogix ODFC
-#    ansible.windows.win_group_membership:
-#      name: FSLogix ODFC Include List
-#      members:
-#        - DRKHG\FSLogix-Access
-#      state: pure
-
-#  - name: Add Domain Group to FSlogix Profiles
-#    ansible.windows.win_group_membership:
-#      name: FSLogix Profile Include List
-#      members:
-#        - DRKHG\FSLogix-Access
-#      state: pure
