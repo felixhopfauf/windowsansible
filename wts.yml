@@ -1,4 +1,4 @@
-- name: Install All Applications on RDSH
+- name: Install RDS Session Host with FSLogix and AppRules 
   hosts: all
   gather_facts: true
   collections:
@@ -10,15 +10,23 @@
   - name: Check if Chocolatey is already installed
     win_shell: (Get-Command choco).Path
     register: get_command_choco
+    tags: 
+    - choco
+    - apps
 
   - name: Install chocolatey
     win_shell: | 
       Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
     when: not get_command_choco.stderr == ""
-    
+    tags: 
+    - choco
+    - apps
   - name: Reboot
     win_reboot:
     when: not get_command_choco.stderr == ""
+    tags: 
+    - choco
+    - apps
 
   - name: join host with automatic reboot
     microsoft.ad.membership:
@@ -35,52 +43,91 @@
     win_chocolatey:
       name: googlechrome
       state: present
+    tags: 
+    - chrome
+    - apps
 
   - name: Install 7 Zip
     win_chocolatey:
       name: 7zip
       state: present
+    tags: 
+    - 7zip
+    - apps
 
   - name: Install Adobe Reader
     win_chocolatey:
       name: adobereader
       state: present
+    tags: 
+    - adobereader
+    - apps
 
   - name: Install Greenshot
     win_chocolatey:
       name: greenshot
       state: present
+    tags: 
+    - greenshot
+    - apps
 
   - name: Install FSlogix
     win_chocolatey:
       name: fslogix
       state: present
+    tags: 
+    - fslogix
+    - apps
 
   - name: Install FSlogix-Rule
     win_chocolatey:
       name: fslogix-rule
       state: present
+    tags: 
+    - fslogix
+    - apps
 
   - name: Install OneDrive
     win_chocolatey:
       name: onedrive
       state: present
       ignore_checksums: True
+    tags: 
+    - onedrive
+    - apps
 
   - name: Install Microsoft Teams
     win_chocolatey:
       name: microsoft-teams
       state: present
+    tags: 
+    - teams
+    - apps
 
   - name: Install Firefox
     win_chocolatey:
       name: firefox
       state: present
+    tags: 
+    - firefox
+    - apps
 
   - name: Install WinSCP
     win_chocolatey:
       name: winscp
       state: present
+    tags: 
+    - winscp
+    - apps
+
+  - name: Install Microsoft Office Pro Plus
+    win_chocolatey:
+      name: microsoft-office-deployment
+      state: present  
+      package_params: " ' /64bit /Shared /Product:O365ProPlusRetail /Exclude:Publisher,OneDrive,Lync,Groove,Access ' "
+    tags: 
+    - office
+    - apps
 
   - name: Install NinjaRMM
     ansible.windows.win_package:
@@ -88,6 +135,9 @@
       product_id: 'NinjaOne RMM'
       arguments: /quiet
       state: present
+    tags: 
+    - ninja
+    - apps
 
   - name: Install Sophos Server Protection
     ansible.windows.win_package:
@@ -95,6 +145,9 @@
       product_id: 'Sophos Server Protection'
       arguments: --quiet
       state: present
+    tags: 
+    - sophos
+    - apps
 
   - name: Add Domain Group to FSlogix ODFC
     ansible.windows.win_group_membership:
@@ -102,6 +155,9 @@
       members:
         - DRKHG\FSLogix-Access
       state: pure
+    tags: 
+    - fslogix
+    - apps
 
   - name: Add Domain Group to FSlogix Profiles
     ansible.windows.win_group_membership:
@@ -109,17 +165,26 @@
       members:
         - DRKHG\FSLogix-Access
       state: pure
+    tags: 
+    - fslogix
+    - apps
 
   - name: Copy App Rules
     community.windows.win_robocopy:
       src: '{{ fslogixapprulesrc }}'
       dest: '{{ fslogixappruledst }}'
+    tags: 
+    - fslogix
+    - apps
 
   - name: Create Autostart FSLogix Tray for all Users
     community.windows.win_shortcut:
       src: '{{ fslogixtraysrc }}'
       dest: '{{ autostartfolder }}\FSLogix Tray.lnk'
       icon: '{{ fslogixtraysrc }},0'
+    tags: 
+    - fslogix
+    - apps
 
   - name: Install RDSH with sub features and management tools
     ansible.windows.win_feature:
@@ -128,27 +193,39 @@
       include_sub_features: true
       include_management_tools: true
     register: win_feature
+    tags:
+    - rds
 
   - name: Reboot if installing RDSH feature requires it
     ansible.windows.win_reboot:
     when: win_feature.reboot_required
+    tags:
+    - rds
 
   - name: Add Server to RDS Deployment
     ansible.windows.win_powershell:
       script: | 
         Add-RDServer -Server '{{ ansible_fqdn }}' -Role "RDS-RD-SERVER" -ConnectionBroker '{{ rdsconnectionbroker }}'
+    tags:
+    - rds
 
   - name: Add Server to RDS Collection
     ansible.windows.win_powershell:
       script: | 
         Add-RDSessionHost -SessionHost '{{ ansible_fqdn }}' -ConnectionBroker '{{ rdsconnectionbroker }}' -CollectionName '{{ rdscollectionname }}'
+    tags:
+    - rds
 
   - name: Disable new Connections
     ansible.windows.win_powershell:
       script: | 
         Set-RDSessionHost -SessionHost '{{ ansible_fqdn }}' -NewConnectionAllowed No -ConnectionBroker '{{ rdsconnectionbroker }}'
+    tags:
+    - rds
 
-#  - name: Install all updates and reboot as many times as needed
-#    ansible.windows.win_updates:
-#      category_names: '*'
-#      reboot: false
+  - name: Install all updates and reboot as many times as needed
+    ansible.windows.win_updates:
+      category_names: '*'
+      reboot: false
+    tags:
+    - winupdate

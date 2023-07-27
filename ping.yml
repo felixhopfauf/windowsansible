@@ -1,0 +1,10 @@
+- name: Ping and Get Facts
+  hosts: all
+  gather_facts: true
+  collections:
+    - community.windows
+    - chocolatey.chocolatey
+    - ansible.windows
+  tasks:
+  - name: Ping
+    win_ping:
