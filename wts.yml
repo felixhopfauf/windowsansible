@@ -131,12 +131,21 @@
     - office
     - apps
 
+  - name: Check if Ninja is installed
+    win_service:
+      name: NinjaRMMAgent
+    register: ninja_info
+    tags: 
+    - ninja
+    - apps
+
   - name: Install NinjaRMM
     ansible.windows.win_package:
       path: '{{ domaindeploypath }}\DRKNinjaTerraCloud.msi' 
       product_id: 'NinjaOne RMM'
       arguments: /quiet
       state: present
+    when: ninja_info.exists == False
     tags: 
     - ninja
     - apps
@@ -144,7 +153,7 @@
   - name: Check if Sophos is installed
     win_service:
       name: Sophos Endpoint Defense Service
-    register: service_info
+    register: sophos_info
     tags: 
     - sophos
     - apps
@@ -155,7 +164,7 @@
       product_id: 'Sophos Server Protection'
       arguments: --quiet
       state: present
-    when: service_info == False
+    when: sophos_info.exists == False
     tags: 
     - sophos
     - apps
