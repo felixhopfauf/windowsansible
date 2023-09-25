@@ -150,6 +150,16 @@
     - ninja
     - apps
 
+  - name: Install Lexware
+    ansible.windows.win_package:
+      path: '{{ lexwareinstallpath }}\warenwirtschaft_pro_client.msi' 
+      product_id: 'Lexware Professional'
+      arguments: /quiet
+      state: present
+    tags: 
+    - lexware
+    - apps
+
   - name: Check if Sophos is installed
     win_service:
       name: Sophos Endpoint Defense Service
