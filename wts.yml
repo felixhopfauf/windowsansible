@@ -6,6 +6,7 @@
     - chocolatey.chocolatey
     - ansible.windows
     - microsoft.ad
+
   tasks:
   - name: Check if Chocolatey is already installed
     win_shell: (Get-Command choco).Path
@@ -13,6 +14,7 @@
     tags: 
     - choco
     - apps
+    - default
 
   - name: Install chocolatey
     win_shell: | 
@@ -21,6 +23,7 @@
     tags: 
     - choco
     - apps
+    - default
 
   - name: Reboot
     win_reboot:
@@ -28,6 +31,7 @@
     tags: 
     - choco
     - apps
+    - default
 
   - name: join host with automatic reboot
     microsoft.ad.membership:
@@ -39,6 +43,7 @@
       reboot: true
     tags:
     - domain
+    - default
 
   - name: Install Chrome
     win_chocolatey:
@@ -47,6 +52,7 @@
     tags: 
     - chrome
     - apps
+    - default
 
   - name: Install 7 Zip
     win_chocolatey:
@@ -55,6 +61,7 @@
     tags: 
     - 7zip
     - apps
+    - default
 
   - name: Install Adobe Reader
     win_chocolatey:
@@ -138,6 +145,7 @@
     tags: 
     - ninja
     - apps
+    - default
 
   - name: Install NinjaRMM
     ansible.windows.win_package:
@@ -149,6 +157,17 @@
     tags: 
     - ninja
     - apps
+    - default
+
+  - name: Install Lexware
+    ansible.windows.win_package:
+      path: '{{ lexwareinstallpath }}\warenwirtschaft_pro_client.msi' 
+      product_id: 'Lexware Professional'
+      arguments: /quiet
+      state: present
+    tags: 
+    - lexware
+    - apps
 
   - name: Check if Sophos is installed
     win_service:
@@ -157,6 +176,7 @@
     tags: 
     - sophos
     - apps
+    - default
 
   - name: Install Sophos Server Protection
     ansible.windows.win_package:
@@ -168,6 +188,7 @@
     tags: 
     - sophos
     - apps
+    - default
 
   - name: Add Domain Group to FSlogix ODFC
     ansible.windows.win_group_membership:
